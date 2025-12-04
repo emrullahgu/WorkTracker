@@ -41,10 +41,6 @@ export default function TaskDetailPage({ params }: { params: { id: string } }) {
   const [submitting, setSubmitting] = useState(false)
   const [uploading, setUploading] = useState(false)
 
-  useEffect(() => {
-    loadTask()
-  }, [params.id])
-
   const loadTask = async () => {
     try {
       const res = await fetch(`/api/tasks/${params.id}`)
@@ -56,6 +52,11 @@ export default function TaskDetailPage({ params }: { params: { id: string } }) {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    loadTask()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [params.id])
 
   const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
