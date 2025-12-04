@@ -84,11 +84,11 @@ export async function POST(req: Request) {
       await sendEventInvitation({
         to: participant.user.email,
         eventTitle: event.title,
-        eventDescription: event.description,
+        eventDescription: event.description || undefined,
         eventStartDate: event.startDate.toISOString(),
         eventEndDate: event.endDate.toISOString(),
-        eventLocation: event.location,
-        invitedBy: session.user.name,
+        eventLocation: event.location || undefined,
+        invitedBy: session.user.name!,
         calendarTitle: event.calendar.title,
       })
     }

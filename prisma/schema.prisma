@@ -179,6 +179,7 @@ model EventReminder {
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   
+  @@unique([eventId, userId])
   @@map("event_reminders")
   @@index([eventId])
   @@index([userId])

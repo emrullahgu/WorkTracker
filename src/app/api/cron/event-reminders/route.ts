@@ -57,10 +57,10 @@ export async function GET(req: Request) {
               await sendEventReminder({
                 to: participant.user.email,
                 eventTitle: event.title,
-                eventDescription: event.description,
+                eventDescription: event.description || undefined,
                 eventStartDate: event.startDate.toISOString(),
                 eventEndDate: event.endDate.toISOString(),
-                eventLocation: event.location,
+                eventLocation: event.location || undefined,
                 calendarTitle: event.calendar.title,
                 minutesBefore: event.reminderMinutes!,
               })

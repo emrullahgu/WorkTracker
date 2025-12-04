@@ -62,11 +62,7 @@ export async function DELETE(
       prisma.taskMention.deleteMany({
         where: { userId },
       }),
-      // Kullanıcının attachment'larını sil
-      prisma.attachment.deleteMany({
-        where: { userId },
-      }),
-      // Kullanıcının oluşturduğu görevleri sil
+      // Kullanıcının oluşturduğu görevleri sil (attachment'lar cascade ile silinecek)
       prisma.task.deleteMany({
         where: { createdById: userId },
       }),
