@@ -1,0 +1,13 @@
+.vercelignore
+dev.db
+dev.db-journal
+*.log
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+node_modules
+.next
+out
+public/uploads/**
+!public/uploads/**/.gitignore
