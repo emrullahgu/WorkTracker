@@ -70,11 +70,6 @@ export default function CalendarDetailPage() {
   })
   const [submitting, setSubmitting] = useState(false)
 
-  useEffect(() => {
-    fetchCalendar()
-    fetchUsers()
-  }, [calendarId])
-
   const fetchCalendar = async () => {
     try {
       const res = await fetch(`/api/calendars/${calendarId}`)
@@ -106,6 +101,12 @@ export default function CalendarDetailPage() {
       console.error('Failed to fetch users:', error)
     }
   }
+
+  useEffect(() => {
+    fetchCalendar()
+    fetchUsers()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [calendarId])
 
   const handleCreateEvent = async (e: React.FormEvent) => {
     e.preventDefault()
