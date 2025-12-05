@@ -116,6 +116,8 @@ export function MentionInput({
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (!showSuggestions) return
 
+    console.log('Key pressed:', e.key, 'Suggestions:', filteredUsers.length, 'Selected:', selectedIndex)
+
     switch (e.key) {
       case 'ArrowDown':
         e.preventDefault()
@@ -129,13 +131,21 @@ export function MentionInput({
         break
       case 'Enter':
         e.preventDefault()
-        if (filteredUsers[selectedIndex]) {
+        e.stopPropagation()
+        console.log('Enter pressed - inserting mention:', filteredUsers[selectedIndex]?.username)
+        if (filteredUsers.length > 0 && filteredUsers[selectedIndex]) {
           insertMention(filteredUsers[selectedIndex].username)
         }
         break
       case 'Escape':
         e.preventDefault()
         setShowSuggestions(false)
+        break
+      case 'Tab':
+        e.preventDefault()
+        if (filteredUsers.length > 0 && filteredUsers[selectedIndex]) {
+          insertMention(filteredUsers[selectedIndex].username)
+        }
         break
     }
   }
