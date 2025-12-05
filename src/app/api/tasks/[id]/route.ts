@@ -97,12 +97,20 @@ export async function PATCH(
     })
 
     // Check if assignment changed
-    const assignmentChanged = data.assignedToId !== undefined && 
+    const assignmentChanged = 'assignedToId' in data && 
       currentTask?.assignedToId !== data.assignedToId
 
+    console.log('Assignment check:', {
+      assignedToIdInData: 'assignedToId' in data,
+      currentAssignedToId: currentTask?.assignedToId,
+      newAssignedToId: data.assignedToId,
+      assignmentChanged
+    })
+
     if (assignmentChanged) {
-      // Send email to new assignee
+      // Send email to new assignee (if task is now assigned to someone)
       if (task.assignedTo && task.assignedTo.email) {
+        console.log('Sending assignment email to:', task.assignedTo.email)
         await sendTaskAssignmentEmail({
           to: task.assignedTo.email,
           taskTitle: task.title,
@@ -116,6 +124,7 @@ export async function PATCH(
       if (currentTask?.assignedTo && 
           currentTask.assignedTo.email && 
           currentTask.assignedTo.id !== task.assignedTo?.id) {
+        console.log('Sending reassignment notification to:', currentTask.assignedTo.email)
         await sendTaskReassignmentNotification({
           to: currentTask.assignedTo.email,
           taskTitle: task.title,
@@ -125,8 +134,9 @@ export async function PATCH(
           taskUrl: `${process.env.NEXTAUTH_URL}/dashboard/tasks/${task.id}`,
         })
       }
-    } else if (task.assignedTo && task.assignedTo.email) {
+    } else if (task.assignedTo && task.assignedTo.email && Object.keys(data).length > 0) {
       // If assignment didn't change but task was updated, notify the assigned user
+      console.log('Sending update notification to:', task.assignedTo.email)
       await sendTaskUpdateNotification({
         to: task.assignedTo.email,
         taskTitle: task.title,
