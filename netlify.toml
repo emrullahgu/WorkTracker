@@ -2,12 +2,10 @@
   command = "npx prisma generate && npm run build"
   publish = ".next"
 
-[[plugins]]
-  package = "@netlify/plugin-nextjs"
-
 [build.environment]
   NODE_VERSION = "18"
   NPM_FLAGS = "--legacy-peer-deps"
+  SCHEDULED_FUNCTIONS_ENABLED = "true"
 
 [[redirects]]
   from = "/*"
@@ -19,9 +17,6 @@
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
-
-[build.environment]
-  SCHEDULED_FUNCTIONS_ENABLED = "true"
 
 # Günlük görev hatırlatması - Her gün saat 16:45 (TR saati, UTC+3)
 # Netlify UTC kullandığı için 13:45 UTC = 16:45 TR
