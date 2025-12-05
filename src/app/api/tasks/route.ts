@@ -92,7 +92,7 @@ export async function POST(req: Request) {
         taskTitle: task.title,
         taskDescription: task.description || undefined,
         assignedBy: task.createdBy.name,
-        taskUrl: `${process.env.NEXTAUTH_URL}/tasks/${task.id}`,
+        taskUrl: `${process.env.NEXTAUTH_URL}/dashboard/tasks/${task.id}`,
       })
     }
 

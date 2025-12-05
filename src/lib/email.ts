@@ -830,3 +830,99 @@ export async function sendPasswordResetEmail({
     return { success: false, error }
   }
 }
+
+interface SendDailyTaskReminderParams {
+  to: string
+  userName: string
+  tasks: Array<{
+    id: string
+    title: string
+    status: string
+    priority: string
+    dueDate?: string
+  }>
+}
+
+export async function sendDailyTaskReminder({
+  to,
+  userName,
+  tasks,
+}: SendDailyTaskReminderParams) {
+  try {
+    const transporter = createTransporter()
+    
+    if (!transporter) {
+      console.log('Email transporter yapılandırılmamış, günlük hatırlatma gönderilmedi')
+      return { success: false, error: 'Email yapılandırması eksik' }
+    }
+
+    const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000'
+    
+    const priorityLabels: Record<string, string> = {
+      LOW: 'Düşük',
+      MEDIUM: 'Orta',
+      HIGH: 'Yüksek',
+      URGENT: 'Acil'
+    }
+
+    const statusLabels: Record<string, string> = {
+      PENDING: 'Bekliyor',
+      IN_PROGRESS: 'Devam Ediyor'
+    }
+
+    const taskList = tasks.map(task => `
+      <div style="background: #f9fafb; padding: 15px; border-radius: 8px; margin-bottom: 12px; border-left: 4px solid ${task.priority === 'URGENT' ? '#ef4444' : task.priority === 'HIGH' ? '#f97316' : task.priority === 'MEDIUM' ? '#eab308' : '#3b82f6'};">
+        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
+          <h3 style="margin: 0; color: #1f2937; font-size: 16px;">${task.title}</h3>
+          <span style="background: ${task.priority === 'URGENT' ? '#fee2e2' : task.priority === 'HIGH' ? '#ffedd5' : task.priority === 'MEDIUM' ? '#fef3c7' : '#dbeafe'}; color: ${task.priority === 'URGENT' ? '#991b1b' : task.priority === 'HIGH' ? '#9a3412' : task.priority === 'MEDIUM' ? '#854d0e' : '#1e40af'}; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600;">${priorityLabels[task.priority]}</span>
+        </div>
+        <p style="margin: 8px 0; color: #6b7280; font-size: 14px;">Durum: ${statusLabels[task.status]}</p>
+        ${task.dueDate ? `<p style="margin: 8px 0; color: #dc2626; font-size: 13px; font-weight: 500;">Son Tarih: ${new Date(task.dueDate).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })}</p>` : ''}
+        <a href="${baseUrl}/dashboard/tasks/${task.id}" style="display: inline-block; margin-top: 8px; color: #4f46e5; text-decoration: none; font-size: 14px; font-weight: 500;">Görevi Görüntüle →</a>
+      </div>
+    `).join('')
+
+    const mailOptions = {
+      from: `"KOBİNERJİ Görev Takip" <${process.env.EMAIL_USER}>`,
+      to,
+      subject: `Günlük Görev Hatırlatması - ${tasks.length} Açık Görev`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <div style="background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); padding: 30px; border-radius: 10px 10px 0 0;">
+            <h1 style="color: white; margin: 0; font-size: 24px;">Günlük Görev Hatırlatması</h1>
+          </div>
+          
+          <div style="background-color: #ffffff; padding: 30px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 10px 10px;">
+            <p style="color: #374151; font-size: 16px; margin-bottom: 20px;">Merhaba ${userName},</p>
+            
+            <p style="color: #374151; font-size: 16px; margin-bottom: 25px;">
+              Üzerinde çalışmanız gereken <strong style="color: #4f46e5;">${tasks.length} adet açık göreviniz</strong> bulunmaktadır:
+            </p>
+            
+            ${taskList}
+            
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${baseUrl}/dashboard/tasks" style="display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); color: white; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 6px rgba(79, 70, 229, 0.3);">
+                Tüm Görevleri Görüntüle
+              </a>
+            </div>
+            
+            <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+              <p style="color: #9ca3af; font-size: 13px; margin: 0; line-height: 1.6;">
+                Bu otomatik bir hatırlatmadır. Lütfen bu e-postayı yanıtlamayın.<br>
+                © ${new Date().getFullYear()} KOBİNERJİ Görev Takip Sistemi
+              </p>
+            </div>
+          </div>
+        </div>
+      `,
+    }
+
+    const info = await transporter.sendMail(mailOptions)
+    console.log('Günlük hatırlatma email\'i gönderildi:', info.messageId)
+    return { success: true, data: info }
+  } catch (error) {
+    console.error('Günlük hatırlatma email hatası:', error)
+    return { success: false, error }
+  }
+}

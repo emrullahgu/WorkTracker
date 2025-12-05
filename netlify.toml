@@ -13,3 +13,21 @@
   from = "/*"
   to = "/index.html"
   status = 200
+
+[functions]
+  directory = "netlify/functions"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+[build.environment]
+  SCHEDULED_FUNCTIONS_ENABLED = "true"
+
+# Günlük görev hatırlatması - Her gün saat 16:45 (TR saati, UTC+3)
+# Netlify UTC kullandığı için 13:45 UTC = 16:45 TR
+[[plugins]]
+  package = "@netlify/plugin-functions-core"
+
+  [plugins.inputs.schedule]
+    cron = "45 13 * * *"
+    path = "/.netlify/functions/daily-reminder"
