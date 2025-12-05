@@ -49,7 +49,13 @@ export async function GET(req: Request) {
           await sendDailyTaskReminder({
             to: user.email,
             userName: user.name,
-            tasks: user.assignedTasks
+            tasks: user.assignedTasks.map(task => ({
+              id: task.id,
+              title: task.title,
+              status: task.status,
+              priority: task.priority,
+              dueDate: task.dueDate?.toISOString()
+            }))
           })
           sentCount++
           console.log(`Hatırlatma gönderildi: ${user.email} (${user.assignedTasks.length} görev)`)
