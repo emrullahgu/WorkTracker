@@ -191,7 +191,13 @@ export function MentionInput({
             <button
               key={user.id}
               type="button"
-              onClick={() => insertMention(user.username)}
+              onMouseDown={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                if (user?.username) {
+                  insertMention(user.username)
+                }
+              }}
               className={`w-full px-4 py-3 text-left hover:bg-indigo-50 transition-colors border-b border-gray-100 last:border-b-0 ${
                 index === selectedIndex ? 'bg-indigo-50' : ''
               }`}
