@@ -16,7 +16,7 @@ interface Task {
   dueDate?: string
   createdAt: string
   createdBy: { name: string; email: string }
-  assignedTo?: { name: string; email: string }
+  assignedTo?: { id: string; name: string; email: string }
   comments: Array<{
     id: string
     content: string
@@ -40,6 +40,8 @@ export default function TaskDetailPage({ params }: { params: { id: string } }) {
   const [comment, setComment] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [uploading, setUploading] = useState(false)
+  const [users, setUsers] = useState<Array<{ id: string; name: string; email: string }>>([])
+  const [assigningUser, setAssigningUser] = useState(false)
 
   const loadTask = async () => {
     try {
@@ -55,8 +57,43 @@ export default function TaskDetailPage({ params }: { params: { id: string } }) {
 
   useEffect(() => {
     loadTask()
+    loadUsers()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params.id])
+
+  const loadUsers = async () => {
+    try {
+      const res = await fetch('/api/users')
+      if (res.ok) {
+        const data = await res.json()
+        setUsers(data)
+      }
+    } catch (error) {
+      console.error('Kullanıcılar yüklenirken hata:', error)
+    }
+  }
+
+  const handleAssignUser = async (userId: string | null) => {
+    setAssigningUser(true)
+    try {
+      const res = await fetch(`/api/tasks/${params.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ assignedToId: userId }),
+      })
+
+      if (res.ok) {
+        loadTask()
+      } else {
+        alert('Atama yapılırken hata oluştu')
+      }
+    } catch (error) {
+      console.error('Atama hatası:', error)
+      alert('Atama yapılırken bir hata oluştu')
+    } finally {
+      setAssigningUser(false)
+    }
+  }
 
   const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -224,16 +261,25 @@ export default function TaskDetailPage({ params }: { params: { id: string } }) {
             <p className="text-xs text-gray-500 ml-6">{task.createdBy.email}</p>
           </div>
 
-          {task.assignedTo && (
-            <div>
-              <p className="text-sm text-gray-600 mb-1">Atanan Kişi</p>
-              <div className="flex items-center space-x-2">
-                <User size={16} className="text-gray-400" />
-                <span className="font-medium">{task.assignedTo.name}</span>
-              </div>
-              <p className="text-xs text-gray-500 ml-6">{task.assignedTo.email}</p>
-            </div>
-          )}
+          <div>
+            <label htmlFor="assignedTo" className="block text-sm font-bold text-gray-900 mb-2">
+              👤 Görevi Ata:
+            </label>
+            <select
+              id="assignedTo"
+              value={task.assignedTo?.id || ''}
+              onChange={(e) => handleAssignUser(e.target.value || null)}
+              disabled={assigningUser}
+              className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-semibold text-gray-900"
+            >
+              <option value="">🚫 Atanmamış</option>
+              {users.map((user) => (
+                <option key={user.id} value={user.id}>
+                  {user.name} ({user.email})
+                </option>
+              ))}
+            </select>
+          </div>
 
           <div>
             <p className="text-sm text-gray-600 mb-1">Oluşturulma Tarihi</p>

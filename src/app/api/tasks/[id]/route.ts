@@ -7,10 +7,10 @@ import { z } from 'zod'
 const updateTaskSchema = z.object({
   title: z.string().min(1).optional(),
   description: z.string().optional(),
-  status: z.enum(['PENDING', 'IN_PROGRESS', 'COMPLETED']).optional(),
+  status: z.enum(['PENDING', 'IN_PROGRESS', 'ON_HOLD', 'COMPLETED', 'CANCELLED']).optional(),
   priority: z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']).optional(),
   dueDate: z.string().optional(),
-  assignedToId: z.string().optional(),
+  assignedToId: z.string().nullable().optional(),
 })
 
 export async function GET(
