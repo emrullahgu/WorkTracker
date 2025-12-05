@@ -8,6 +8,23 @@ interface SendTaskAssignmentEmailParams {
   taskUrl: string
 }
 
+interface SendTaskReassignmentNotificationParams {
+  to: string
+  taskTitle: string
+  taskDescription?: string
+  reassignedBy: string
+  newAssignee: string
+  taskUrl: string
+}
+
+interface SendTaskUpdateNotificationParams {
+  to: string
+  taskTitle: string
+  taskDescription?: string
+  updatedBy: string
+  taskUrl: string
+}
+
 interface SendVerificationEmailParams {
   to: string
   username: string
@@ -930,6 +947,155 @@ export async function sendDailyTaskReminder({
     return { success: true, data: info }
   } catch (error) {
     console.error('Günlük hatırlatma email hatası:', error)
+    return { success: false, error }
+  }
+}
+
+// Görev yeniden atama bildirimi (eski sahibine)
+export async function sendTaskReassignmentNotification({
+  to,
+  taskTitle,
+  taskDescription,
+  reassignedBy,
+  newAssignee,
+  taskUrl,
+}: SendTaskReassignmentNotificationParams) {
+  try {
+    const transporter = createTransporter()
+    
+    if (!transporter) {
+      return { success: false, error: 'Email yapılandırması eksik' }
+    }
+
+    const mailOptions = {
+      from: `"KOBİNERJİ Görev Takip" <${process.env.EMAIL_USER}>`,
+      to,
+      subject: `🔄 Görev Yeniden Atandı: ${taskTitle}`,
+      html: `
+        <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; background: #f9fafb;">
+          <div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); padding: 40px 30px; text-align: center;">
+            <h1 style="color: white; margin: 0; font-size: 28px; font-weight: 700;">KOBİNERJİ</h1>
+            <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0; font-size: 14px;">Görev Takip Sistemi</p>
+          </div>
+          
+          <div style="padding: 40px 30px; background: white;">
+            <div style="background: #fef3c7; padding: 20px; border-radius: 10px; margin: 0 0 25px 0; text-align: center; border-left: 4px solid #f59e0b;">
+              <p style="color: #92400e; margin: 0; font-size: 18px; font-weight: 600;">
+                🔄 Görev Başka Birine Atandı
+              </p>
+            </div>
+            
+            <p style="color: #4b5563; line-height: 1.8; margin: 0 0 20px 0; font-size: 16px;">
+              <strong style="color: #f59e0b;">${reassignedBy}</strong> aşağıdaki görevi sizden alıp <strong style="color: #667eea;">${newAssignee}</strong> kullanıcısına yeniden atadı:
+            </p>
+            
+            <div style="background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%); padding: 25px; border-radius: 10px; margin: 25px 0; border-left: 4px solid #f59e0b;">
+              <h2 style="color: #1f2937; margin: 0 0 15px 0; font-size: 22px; font-weight: 700;">📋 ${taskTitle}</h2>
+              ${taskDescription ? `<p style="color: #4b5563; margin: 15px 0 0 0; line-height: 1.8; font-size: 15px;">${taskDescription}</p>` : ''}
+            </div>
+            
+            <div style="background: #dbeafe; padding: 15px; border-radius: 8px; border-left: 4px solid #3b82f6; margin: 25px 0;">
+              <p style="color: #1e40af; margin: 0; font-size: 14px; line-height: 1.6;">
+                ℹ️ <strong>Bilgi:</strong> Bu görev artık sizin sorumluluğunuzda değil. Detayları görüntülemek için aşağıdaki butona tıklayabilirsiniz.
+              </p>
+            </div>
+            
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${taskUrl}" style="display: inline-block; padding: 16px 40px; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; text-decoration: none; border-radius: 10px; font-weight: 700; font-size: 16px; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);">
+                📋 Görevi Görüntüle
+              </a>
+            </div>
+            
+            <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+              <p style="color: #9ca3af; font-size: 13px; margin: 0; line-height: 1.6;">
+                Bu otomatik bir bildirimdir. Lütfen bu e-postayı yanıtlamayın.<br>
+                © ${new Date().getFullYear()} KOBİNERJİ. Tüm hakları saklıdır.
+              </p>
+            </div>
+          </div>
+        </div>
+      `,
+    }
+
+    const info = await transporter.sendMail(mailOptions)
+    console.log('Yeniden atama bildirimi gönderildi:', info.messageId)
+    return { success: true, data: info }
+  } catch (error) {
+    console.error('Yeniden atama bildirimi hatası:', error)
+    return { success: false, error }
+  }
+}
+
+// Görev güncelleme bildirimi
+export async function sendTaskUpdateNotification({
+  to,
+  taskTitle,
+  taskDescription,
+  updatedBy,
+  taskUrl,
+}: SendTaskUpdateNotificationParams) {
+  try {
+    const transporter = createTransporter()
+    
+    if (!transporter) {
+      return { success: false, error: 'Email yapılandırması eksik' }
+    }
+
+    const mailOptions = {
+      from: `"KOBİNERJİ Görev Takip" <${process.env.EMAIL_USER}>`,
+      to,
+      subject: `✏️ Görev Güncellendi: ${taskTitle}`,
+      html: `
+        <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; background: #f9fafb;">
+          <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 40px 30px; text-align: center;">
+            <h1 style="color: white; margin: 0; font-size: 28px; font-weight: 700;">KOBİNERJİ</h1>
+            <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0; font-size: 14px;">Görev Takip Sistemi</p>
+          </div>
+          
+          <div style="padding: 40px 30px; background: white;">
+            <div style="background: #d1fae5; padding: 20px; border-radius: 10px; margin: 0 0 25px 0; text-align: center; border-left: 4px solid #10b981;">
+              <p style="color: #065f46; margin: 0; font-size: 18px; font-weight: 600;">
+                ✏️ Görev Güncellendi
+              </p>
+            </div>
+            
+            <p style="color: #4b5563; line-height: 1.8; margin: 0 0 20px 0; font-size: 16px;">
+              <strong style="color: #10b981;">${updatedBy}</strong> üzerinizde atanmış olan bir görevi güncelledi:
+            </p>
+            
+            <div style="background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%); padding: 25px; border-radius: 10px; margin: 25px 0; border-left: 4px solid #10b981;">
+              <h2 style="color: #1f2937; margin: 0 0 15px 0; font-size: 22px; font-weight: 700;">📋 ${taskTitle}</h2>
+              ${taskDescription ? `<p style="color: #4b5563; margin: 15px 0 0 0; line-height: 1.8; font-size: 15px;">${taskDescription}</p>` : ''}
+            </div>
+            
+            <div style="background: #dbeafe; padding: 15px; border-radius: 8px; border-left: 4px solid #3b82f6; margin: 25px 0;">
+              <p style="color: #1e40af; margin: 0; font-size: 14px; line-height: 1.6;">
+                💡 <strong>Güncelleme:</strong> Görev detaylarında değişiklik yapıldı. Güncel bilgileri görüntülemek için aşağıdaki butona tıklayın.
+              </p>
+            </div>
+            
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${taskUrl}" style="display: inline-block; padding: 16px 40px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; text-decoration: none; border-radius: 10px; font-weight: 700; font-size: 16px; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);">
+                📋 Güncel Görevi Görüntüle
+              </a>
+            </div>
+            
+            <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+              <p style="color: #9ca3af; font-size: 13px; margin: 0; line-height: 1.6;">
+                Bu otomatik bir bildirimdir. Lütfen bu e-postayı yanıtlamayın.<br>
+                © ${new Date().getFullYear()} KOBİNERJİ. Tüm hakları saklıdır.
+              </p>
+            </div>
+          </div>
+        </div>
+      `,
+    }
+
+    const info = await transporter.sendMail(mailOptions)
+    console.log('Güncelleme bildirimi gönderildi:', info.messageId)
+    return { success: true, data: info }
+  } catch (error) {
+    console.error('Güncelleme bildirimi hatası:', error)
     return { success: false, error }
   }
 }

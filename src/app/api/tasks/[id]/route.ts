@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
-import { sendTaskAssignmentEmail } from '@/lib/email'
+import { sendTaskAssignmentEmail, sendTaskReassignmentNotification, sendTaskUpdateNotification } from '@/lib/email'
 
 const updateTaskSchema = z.object({
   title: z.string().min(1).optional(),
@@ -75,7 +75,7 @@ export async function PATCH(
       where: { id: params.id },
       include: {
         assignedTo: {
-          select: { id: true, email: true }
+          select: { id: true, name: true, email: true }
         },
       },
     })
@@ -96,16 +96,42 @@ export async function PATCH(
       },
     })
 
-    // Send email notification if task was reassigned to a different user
+    // Check if assignment changed
     const assignmentChanged = data.assignedToId !== undefined && 
       currentTask?.assignedToId !== data.assignedToId
 
-    if (assignmentChanged && task.assignedTo && task.assignedTo.email) {
-      await sendTaskAssignmentEmail({
+    if (assignmentChanged) {
+      // Send email to new assignee
+      if (task.assignedTo && task.assignedTo.email) {
+        await sendTaskAssignmentEmail({
+          to: task.assignedTo.email,
+          taskTitle: task.title,
+          taskDescription: task.description || undefined,
+          assignedBy: session.user.name || 'Bir kullanıcı',
+          taskUrl: `${process.env.NEXTAUTH_URL}/dashboard/tasks/${task.id}`,
+        })
+      }
+
+      // Send email to old assignee (if exists and different from new one)
+      if (currentTask?.assignedTo && 
+          currentTask.assignedTo.email && 
+          currentTask.assignedTo.id !== task.assignedTo?.id) {
+        await sendTaskReassignmentNotification({
+          to: currentTask.assignedTo.email,
+          taskTitle: task.title,
+          taskDescription: task.description || undefined,
+          reassignedBy: session.user.name || 'Bir kullanıcı',
+          newAssignee: task.assignedTo?.name || 'Atanmamış',
+          taskUrl: `${process.env.NEXTAUTH_URL}/dashboard/tasks/${task.id}`,
+        })
+      }
+    } else if (task.assignedTo && task.assignedTo.email) {
+      // If assignment didn't change but task was updated, notify the assigned user
+      await sendTaskUpdateNotification({
         to: task.assignedTo.email,
         taskTitle: task.title,
         taskDescription: task.description || undefined,
-        assignedBy: session.user.name || 'Bir kullanıcı',
+        updatedBy: session.user.name || 'Bir kullanıcı',
         taskUrl: `${process.env.NEXTAUTH_URL}/dashboard/tasks/${task.id}`,
       })
     }
