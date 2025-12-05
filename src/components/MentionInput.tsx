@@ -66,8 +66,8 @@ export function MentionInput({
         setMentionQuery(textAfterAt.toLowerCase())
         
         const filtered = users.filter(user =>
-          user.username.toLowerCase().includes(textAfterAt.toLowerCase()) ||
-          user.name.toLowerCase().includes(textAfterAt.toLowerCase())
+          user.username?.toLowerCase().includes(textAfterAt.toLowerCase()) ||
+          user.name?.toLowerCase().includes(textAfterAt.toLowerCase())
         ).slice(0, 5) // Maksimum 5 öneri
         
         setFilteredUsers(filtered)
