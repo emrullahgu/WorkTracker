@@ -95,37 +95,44 @@ export async function sendTaskAssignmentEmail({
     }
 
     const mailOptions = {
-      from: `"Görev Takip Sistemi" <${process.env.EMAIL_USER}>`,
+      from: `"KOBİNERJİ Görev Takip" <${process.env.EMAIL_USER}>`,
       to,
-      subject: `Yeni Görev Atandı: ${taskTitle}`,
+      subject: `🎯 Size Yeni Görev Atandı: ${taskTitle}`,
       html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; border-radius: 10px 10px 0 0;">
-            <h1 style="color: white; margin: 0; font-size: 24px;">🎯 Yeni Görev Atandı</h1>
+        <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; background: #f9fafb;">
+          <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px 30px; text-align: center;">
+            <h1 style="color: white; margin: 0; font-size: 28px; font-weight: 700;">KOBİNERJİ</h1>
+            <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0; font-size: 14px;">Görev Takip Sistemi</p>
           </div>
           
-          <div style="background-color: #ffffff; padding: 30px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 10px 10px;">
-            <p style="color: #374151; font-size: 16px; margin-bottom: 20px;">Merhaba,</p>
-            
-            <p style="color: #374151; font-size: 16px; margin-bottom: 25px;">
-              <strong style="color: #667eea;">${assignedBy}</strong> tarafından size yeni bir görev atandı:
-            </p>
+          <div style="padding: 40px 30px; background: white;">
+            <div style="background: #dbeafe; padding: 20px; border-radius: 10px; margin: 0 0 25px 0; text-align: center; border-left: 4px solid #3b82f6;">
+              <p style="color: #1e40af; margin: 0; font-size: 18px; font-weight: 600;">
+                🎯 <strong>${assignedBy}</strong> size yeni bir görev atadı!
+              </p>
+            </div>
             
             <div style="background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%); padding: 25px; border-radius: 10px; margin: 25px 0; border-left: 4px solid #667eea;">
-              <h2 style="color: #1f2937; margin: 0 0 15px 0; font-size: 20px;">${taskTitle}</h2>
-              ${taskDescription ? `<p style="color: #4b5563; margin: 0; line-height: 1.6;">${taskDescription}</p>` : ''}
+              <h2 style="color: #1f2937; margin: 0 0 15px 0; font-size: 22px; font-weight: 700;">📋 ${taskTitle}</h2>
+              ${taskDescription ? `<p style="color: #4b5563; margin: 15px 0 0 0; line-height: 1.8; font-size: 15px;">${taskDescription}</p>` : ''}
+            </div>
+            
+            <div style="background: #fef3c7; padding: 15px; border-radius: 8px; border-left: 4px solid #f59e0b; margin: 25px 0;">
+              <p style="color: #92400e; margin: 0; font-size: 14px; line-height: 1.6;">
+                💡 <strong>Görev Detayları:</strong> Görevi görüntülemek, durumunu güncellemek ve yorum yapmak için aşağıdaki butona tıklayın.
+              </p>
             </div>
             
             <div style="text-align: center; margin: 30px 0;">
-              <a href="${taskUrl}" style="display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 6px rgba(102, 126, 234, 0.3);">
-                Görevi Görüntüle →
+              <a href="${taskUrl}" style="display: inline-block; padding: 16px 40px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-decoration: none; border-radius: 10px; font-weight: 700; font-size: 16px; box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4); transition: all 0.3s;">
+                📋 Görevi Görüntüle
               </a>
             </div>
             
             <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
               <p style="color: #9ca3af; font-size: 13px; margin: 0; line-height: 1.6;">
                 Bu otomatik bir bildirimdir. Lütfen bu e-postayı yanıtlamayın.<br>
-                © ${new Date().getFullYear()} Görev Takip Sistemi. Tüm hakları saklıdır.
+                © ${new Date().getFullYear()} KOBİNERJİ. Tüm hakları saklıdır.
               </p>
             </div>
           </div>

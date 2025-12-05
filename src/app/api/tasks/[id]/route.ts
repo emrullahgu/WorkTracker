@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
+import { sendTaskAssignmentEmail } from '@/lib/email'
 
 const updateTaskSchema = z.object({
   title: z.string().min(1).optional(),
@@ -69,6 +70,16 @@ export async function PATCH(
     const body = await req.json()
     const data = updateTaskSchema.parse(body)
 
+    // Get the current task before update to check if assignment changed
+    const currentTask = await prisma.task.findUnique({
+      where: { id: params.id },
+      include: {
+        assignedTo: {
+          select: { id: true, email: true }
+        },
+      },
+    })
+
     const task = await prisma.task.update({
       where: { id: params.id },
       data: {
@@ -84,6 +95,20 @@ export async function PATCH(
         },
       },
     })
+
+    // Send email notification if task was reassigned to a different user
+    const assignmentChanged = data.assignedToId !== undefined && 
+      currentTask?.assignedToId !== data.assignedToId
+
+    if (assignmentChanged && task.assignedTo && task.assignedTo.email) {
+      await sendTaskAssignmentEmail({
+        to: task.assignedTo.email,
+        taskTitle: task.title,
+        taskDescription: task.description || undefined,
+        assignedBy: session.user.name || 'Bir kullanıcı',
+        taskUrl: `${process.env.NEXTAUTH_URL}/dashboard/tasks/${task.id}`,
+      })
+    }
 
     return NextResponse.json(task)
   } catch (error) {
