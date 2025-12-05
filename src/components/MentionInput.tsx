@@ -128,8 +128,8 @@ export function MentionInput({
         setSelectedIndex(prev => prev > 0 ? prev - 1 : prev)
         break
       case 'Enter':
+        e.preventDefault()
         if (filteredUsers[selectedIndex]) {
-          e.preventDefault()
           insertMention(filteredUsers[selectedIndex].username)
         }
         break
@@ -174,7 +174,7 @@ export function MentionInput({
         >
           <div className="p-2 border-b border-gray-200 bg-gray-50">
             <p className="text-xs text-gray-600 font-medium">
-              @ ile kullanıcı etiketle • ↑↓ seç • Enter onaylaa
+              @ ile kullanıcı etiketle • ↑↓ seç • Enter onayla
             </p>
           </div>
           {filteredUsers.map((user, index) => (
